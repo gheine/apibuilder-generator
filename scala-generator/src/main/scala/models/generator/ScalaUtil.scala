@@ -64,15 +64,19 @@ object ScalaUtil {
   }
 
   def toClassName(name: String): String = {
-    val baseName =lib.Text.safeName(
-      if (name == name.toUpperCase) {
-        lib.Text.initCap(lib.Text.splitIntoWords(name).map(_.toLowerCase)).mkString("")
-      } else {
-        lib.Text.initCap(snakeToCamelCase(name))
-      }
-    )
+    extractInner(name).fold {
+      val baseName =lib.Text.safeName(
+        if (name == name.toUpperCase) {
+          lib.Text.initCap(lib.Text.splitIntoWords(name).map(_.toLowerCase)).mkString("")
+        } else {
+          lib.Text.initCap(snakeToCamelCase(name))
+        }
+      )
 
-    ScalaUtil.quoteNameIfKeyword(baseName)
+      ScalaUtil.quoteNameIfKeyword(baseName)
+    }{ inner =>
+      toClassName(s"Seq${inner.capitalize}")
+    }
   }
 
   def toVariable(name: String): String = {
@@ -82,6 +86,14 @@ object ScalaUtil {
   def wrapInQuotes(value: String): String = {
     // TODO: Quote values if needed
     s""""$value""""
+  }
+
+  private final val ListRx = "^\\[(.*)\\]$".r
+  def extractInner(name: String): Option[String] = {
+    name match {
+      case ListRx(inner) => Some(inner)
+      case _ => None
+    }
   }
 
   def scalaDefault(value: String, datatype: ScalaDatatype): String = try {

@@ -219,12 +219,12 @@ case class Play2Json(
 
   private def reader(union: ScalaUnion, ut: ScalaUnionType): String = {
     ut.model match {
-      case Some(model) => {
+      case Some(_) => {
         play2JsonCommon.implicitReaderName(ut.name)
       }
       case None => {
         ut.enum match {
-          case Some(enum) => {
+          case Some(_) => {
             play2JsonCommon.implicitReaderName(ut.name)
           }
           case None => {
@@ -235,9 +235,10 @@ case class Play2Json(
               // a primitive, so this match is redundant,
               // but necessary due to the way the data is currently
               // structured
-              case p: ScalaPrimitive => {
+              case p: ScalaPrimitive =>
                 play2JsonCommon.implicitReaderName(PrimitiveWrapper.className(union, p))
-              }
+              case ScalaDatatype.List(p: ScalaPrimitive) =>
+                play2JsonCommon.implicitReaderName(PrimitiveWrapper.className(union, p))
               case dt => sys.error(s"unsupported datatype[${dt}] in union ${ut}")
             }
           }
@@ -410,6 +411,7 @@ case class Play2Json(
           case p @ (ScalaPrimitive.Model(_, _) | ScalaPrimitive.Enum(_, _) | ScalaPrimitive.Union(_, _)) => {
             p.name
           }
+          case ScalaDatatype.List(p: ScalaPrimitive) => ssd.modelClassName(PrimitiveWrapper.className(union, p, "Seq"))
           case p: ScalaPrimitive => ssd.modelClassName(PrimitiveWrapper.className(union, p))
           case c: ScalaDatatype.Container => sys.error(s"unsupported container type ${c} encountered in union ${union.name}")
         }
@@ -543,7 +545,10 @@ case class Play2Json(
       case ScalaPrimitive.Union(ns, name) => {
         mergeDiscriminator(play2JsonCommon.toJsonObjectMethodName(ns, name) + s"($varName)", discriminator)
       }
-      case ScalaDatatype.List(_) | ScalaDatatype.Map(_) | ScalaDatatype.Option(_) | ScalaPrimitive.Unit => {
+      case ScalaDatatype.List(_) => {
+        wrapInObject(s"play.api.libs.json.Json.toJson(${varName}.value)", discriminator)
+      }
+      case ScalaDatatype.Map(_) | ScalaDatatype.Option(_) | ScalaPrimitive.Unit => {
         mergeDiscriminator(s"play.api.libs.json.Json.toJson($varName)", discriminator)
       }
     }

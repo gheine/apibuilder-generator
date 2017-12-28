@@ -125,16 +125,24 @@ object ScalaUnionType {
     }
     val dt: ScalaDatatype = ssd.scalaDatatype(`type`)
     dt match {
-      case enum: ScalaPrimitive.Enum => {
+      case enum: ScalaPrimitive.Enum =>
         ScalaUnionType(ssd, t, dt, enum = Some(enum))
-      }
 
-      case model: ScalaPrimitive.Model => {
+      case ScalaDatatype.List(enum: ScalaPrimitive.Enum) =>
+        ScalaUnionType(ssd, t, dt, enum = Some(enum))
+
+      case model: ScalaPrimitive.Model =>
         ScalaUnionType(ssd, t, dt, model = Some(model))
-      }
-      case p: ScalaPrimitive => {
-        ScalaUnionType(ssd, t, p)
-      }
+
+      case ScalaDatatype.List(model: ScalaPrimitive.Model) =>
+        ScalaUnionType(ssd, t, dt, model = Some(model))
+
+      case p: ScalaPrimitive =>
+        ScalaUnionType(ssd, t, dt)
+
+      case ScalaDatatype.List(_: ScalaPrimitive) =>
+        ScalaUnionType(ssd, t, dt)
+
       case c: ScalaDatatype.Container => sys.error(s"illegal container type ${c} encountered in union ${t.`type`}")
     }
   }
