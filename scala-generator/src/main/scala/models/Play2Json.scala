@@ -238,7 +238,9 @@ case class Play2Json(
               case p: ScalaPrimitive =>
                 play2JsonCommon.implicitReaderName(PrimitiveWrapper.className(union, p))
               case ScalaDatatype.List(p: ScalaPrimitive) =>
-                play2JsonCommon.implicitReaderName(PrimitiveWrapper.className(union, p))
+                play2JsonCommon.implicitReaderName(PrimitiveWrapper.className(union, p, "Seq"))
+              case ScalaDatatype.Map(p: ScalaPrimitive) =>
+                play2JsonCommon.implicitReaderName(PrimitiveWrapper.className(union, p, "Map"))
               case dt => sys.error(s"unsupported datatype[${dt}] in union ${ut}")
             }
           }
@@ -411,8 +413,9 @@ case class Play2Json(
           case p @ (ScalaPrimitive.Model(_, _) | ScalaPrimitive.Enum(_, _) | ScalaPrimitive.Union(_, _)) => {
             p.name
           }
-          case ScalaDatatype.List(p: ScalaPrimitive) => ssd.modelClassName(PrimitiveWrapper.className(union, p, "Seq"))
           case p: ScalaPrimitive => ssd.modelClassName(PrimitiveWrapper.className(union, p))
+          case ScalaDatatype.List(p: ScalaPrimitive) => ssd.modelClassName(PrimitiveWrapper.className(union, p, "Seq"))
+          case ScalaDatatype.Map(p: ScalaPrimitive) => ssd.modelClassName(PrimitiveWrapper.className(union, p, "Map"))
           case c: ScalaDatatype.Container => sys.error(s"unsupported container type ${c} encountered in union ${union.name}")
         }
       )

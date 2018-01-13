@@ -197,8 +197,10 @@ ${Seq(generateEnums(), generateModels(), generateUnions()).filter(!_.isEmpty).mk
           case p @ (ScalaPrimitive.Model(_, _) | ScalaPrimitive.Enum(_, _) | ScalaPrimitive.Union(_, _)) => {
             p.name
           }
+          case ScalaDatatype.Map(p: ScalaPrimitive) => ssd.modelClassName(PrimitiveWrapper.className(union, p, "Map"))
+          case ScalaDatatype.List(p: ScalaPrimitive) => ssd.modelClassName(PrimitiveWrapper.className(union, p, "Seq"))
           case p: ScalaPrimitive => ssd.modelClassName(PrimitiveWrapper.className(union, p))
-          case c: ScalaDatatype.Container => sys.error(s"unsupported container type ${c} encountered in union ${union.name}")
+          case c: ScalaDatatype.Container => "xx" + c.name + "xx" //sys.error(s"unsupported container type ${c} encountered in union ${union.name}")
         }
       )
     }

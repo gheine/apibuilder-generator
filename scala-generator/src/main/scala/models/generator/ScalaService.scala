@@ -137,25 +137,20 @@ object ScalaUnionType {
       case ScalaDatatype.List(model: ScalaPrimitive.Model) =>
         ScalaUnionType(ssd, t, dt, model = Some(model))
 
-      case p: ScalaPrimitive =>
+      case _ =>
         ScalaUnionType(ssd, t, dt)
-
-      case ScalaDatatype.List(_: ScalaPrimitive) =>
-        ScalaUnionType(ssd, t, dt)
-
-      case c: ScalaDatatype.Container => sys.error(s"illegal container type ${c} encountered in union ${t.`type`}")
     }
   }
 
-  def typeName(union: ScalaUnion, unionType: ScalaUnionType): String = {
-    unionType.datatype match {
-      case p @ (ScalaPrimitive.Model(_, _) | ScalaPrimitive.Enum(_, _) | ScalaPrimitive.Union(_, _)) => {
-        p.name
-      }
-      case p: ScalaPrimitive => PrimitiveWrapper.className(union, p)
-      case c: ScalaDatatype.Container => sys.error(s"unsupported container type ${c} encountered in union ${union.name}")
-    }
-  }
+//  def typeName(union: ScalaUnion, unionType: ScalaUnionType): String = {
+//    unionType.datatype match {
+//      case p @ (ScalaPrimitive.Model(_, _) | ScalaPrimitive.Enum(_, _) | ScalaPrimitive.Union(_, _)) => {
+//        p.name
+//      }
+//      case p: ScalaPrimitive => PrimitiveWrapper.className(union, p)
+//      case c: ScalaDatatype.Container => sys.error(s"unsupported container type ${c} encountered in union ${union.name}")
+//    }
+//  }
 }
 
 class ScalaModel(val ssd: ScalaService, val model: Model) {
